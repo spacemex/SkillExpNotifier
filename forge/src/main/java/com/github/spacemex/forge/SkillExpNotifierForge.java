@@ -1,5 +1,6 @@
 package com.github.spacemex.forge;
 
+import com.github.spacemex.SkillExpNotifier;
 import com.github.spacemex.forge.networking.client.ClientNotifier;
 import com.github.spacemex.forge.networking.client.ToastPacketHandler;
 import com.github.spacemex.networking.XpGainPacket;
@@ -13,26 +14,22 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-
-import com.github.spacemex.SkillExpNotifier;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.SimpleChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Mod(SkillExpNotifier.MOD_ID)
 public final class SkillExpNotifierForge {
     public static Logger LOGGER = LoggerFactory.getLogger(SkillExpNotifier.MOD_ID);
-    public static final String PROTOCOL_VERSION = "1";
-    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            Identifier.fromNamespaceAndPath(SkillExpNotifier.MOD_ID, "network"),
-            () -> PROTOCOL_VERSION,
-            PROTOCOL_VERSION::equals,
-            PROTOCOL_VERSION::equals
-    );
-    public SkillExpNotifierForge(final FMLJavaModLoadingContext modLoadingContext) {
-        IEventBus eventBus = modLoadingContext.getModEventBus();
+    public static SimpleChannel CHANNEL;
+    public static final Identifier XP_GAIN_PACKET_ID = new Identifier(SkillExpNotifier.MOD_ID, "network");
+    public static final int PROTOCOL_VERSION = 1;
+
+
+
+    public SkillExpNotifierForge() {
+        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         EventBuses.registerModEventBus(SkillExpNotifier.MOD_ID,eventBus);
         SkillExpNotifier.init();
         eventBus.addListener(this::onCommonSetup);
@@ -42,19 +39,22 @@ public final class SkillExpNotifierForge {
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
-        CHANNEL.registerMessage(
-                0,
-                XpGainPacket.class,
-                XpGainPacket::encode,
-                XpGainPacket::decode,
-                (msg, ctxSupplier) ->{
-                    NetworkEvent.Context ctx = ctxSupplier.get();
-                    ctx.setPacketHandled(true);
-                    ctx.enqueueWork(()-> DistExecutor.safeRunWhenOn(Dist.CLIENT,()-> ()->{
+        CHANNEL = ChannelBuilder.named(XP_GAIN_PACKET_ID)
+                .networkProtocolVersion(PROTOCOL_VERSION)
+                .clientAcceptedVersions((s,v)->true)
+                .serverAcceptedVersions((s,v)->true)
+                .simpleChannel();
+
+        CHANNEL.messageBuilder(XpGainPacket.class)
+                .encoder(XpGainPacket::encode)
+                .decoder(XpGainPacket::decode)
+                .consumerMainThread((msg, ctx)->{
+                    if (ctx.getDirection().getReceptionSide().isClient()){
                         ToastPacketHandler.onXpGain(msg);
-                    }));
-                }
-        );
+                    }
+                    ctx.setPacketHandled(true);
+                })
+                .add();
     }
     @OnlyIn(Dist.CLIENT)
     private void clientInit(FMLClientSetupEvent event) {
