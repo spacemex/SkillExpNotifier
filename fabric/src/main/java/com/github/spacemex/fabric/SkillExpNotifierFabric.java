@@ -1,13 +1,11 @@
 package com.github.spacemex.fabric;
 
+import com.github.spacemex.SkillExpNotifier;
 import com.github.spacemex.fabric.networking.ServerNotifier;
 import com.github.spacemex.networking.XpGainPacket;
 import net.fabricmc.api.ModInitializer;
-
-import com.github.spacemex.SkillExpNotifier;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.impl.networking.server.ServerPlayNetworkAddon;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
