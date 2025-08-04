@@ -34,12 +34,12 @@ dependencies {
     modImplementation "dev.architectury:architectury-fabric:$rootProject.architectury_api_version"
     modImplementation "net.puffish:skillsmod:${skill_api}:fabric"
 
-    implementation "org.yaml:snakeyaml:2.4"
-    implementation "com.github.spacemex:SimpleConfigApi:manual-5"
+    implementation "org.yaml:snakeyaml:${snake_version}"
+    implementation "com.github.spacemex:SimpleConfigApi:${simple_config_version}"
 
 
-    shadow "org.yaml:snakeyaml:2.4"
-    shadow "com.github.spacemex:SimpleConfigApi:manual-5"
+    shadow "org.yaml:snakeyaml:${snake_version}"
+    shadow "com.github.spacemex:SimpleConfigApi:${simple_config_version}"
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
