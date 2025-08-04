@@ -1,17 +1,18 @@
 modLoader = "javafml"
 loaderVersion = "[47,)"
-#issueTrackerURL = ""
-license = "Insert License Here"
+issueTrackerURL = "https://github.com/spacemex/SkillExpNotifier/issues"
+license = "MIT"
 
 [[mods]]
 modId = "skillexpnotifier"
 version = "${version}"
 displayName = "SkillExpNotifier"
-authors = "Me!"
+authors = "Space_Mex"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+A Simple Mod For Displaying A Toast For Pufferfish Skills Api
 '''
 #logoFile = ""
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
 
 [[dependencies.skillexpnotifier]]
 modId = "forge"
