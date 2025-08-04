@@ -11,7 +11,7 @@ authors = "Space_Mex"
 description = '''
 A Simple Mod For Displaying A Toast For Pufferfish Skills Api
 '''
-#logoFile = ""
+logoFile = "assets/skillexpnotifier/icon.png"
 displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
 
 [[dependencies.skillexpnotifier]]
