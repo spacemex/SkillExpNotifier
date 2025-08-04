@@ -13,6 +13,6 @@ dependencies {
 
 
 
-    compileOnly("org.yaml:snakeyaml:2.4")
-    compileOnly('com.github.spacemex:SimpleConfigApi:manual-5')
+    compileOnly("org.yaml:snakeyaml:${snake_version}")
+    compileOnly("com.github.spacemex:SimpleConfigApi:${simple_config_version}")
 }
