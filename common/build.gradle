@@ -1,5 +1,10 @@
+// Common build.gradle
 architectury {
     common rootProject.enabled_platforms.split(',')
+    platformSetupLoomIde()
+    neoForge{
+        platformPackage = "forge"
+    }
 }
 
 dependencies {
