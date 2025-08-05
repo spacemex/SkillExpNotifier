@@ -3,12 +3,13 @@ package com.github.spacemex.forge.networking.client;
 import com.github.spacemex.client.CustomToastComponent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
+import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.common.NeoForge;
+
 
 @OnlyIn(Dist.CLIENT)
 public class ClientNotifier {
@@ -30,6 +31,6 @@ public class ClientNotifier {
     }
 
     public static void register(){
-        MinecraftForge.EVENT_BUS.register(ClientNotifier.class);
+        NeoForge.EVENT_BUS.register(ClientNotifier.class);
     }
 }
