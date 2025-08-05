@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[48,)"
+loaderVersion = "[1,)"
 issueTrackerURL = "https://github.com/spacemex/SkillExpNotifier/issues"
 license = "MIT"
 
@@ -15,9 +15,9 @@ logoFile = "assets/skillexpnotifier/icon.png"
 displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
 
 [[dependencies.skillexpnotifier]]
-modId = "forge"
+modId = "neoforge"
 mandatory = true
-versionRange = "[48,)"
+versionRange = "[20.4,)"
 ordering = "NONE"
 side = "BOTH"
 
