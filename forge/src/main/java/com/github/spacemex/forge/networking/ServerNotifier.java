@@ -1,15 +1,14 @@
 package com.github.spacemex.forge.networking;
 
 import com.github.spacemex.SkillExpNotifier;
-import com.github.spacemex.forge.SkillExpNotifierForge;
-import com.github.spacemex.networking.XpGainPacket;
-import net.minecraft.network.ClientConnection;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.puffish.skillsmod.api.SkillsAPI;
 
 import java.util.HashMap;
@@ -36,11 +35,9 @@ public class ServerNotifier {
                         int prev = playerMap.getOrDefault(id,total);
                         if (total > prev){
                            int delta = total - prev;
-                           ClientConnection connection = player.networkHandler.getConnection();
-                           SkillExpNotifierForge.CHANNEL.send(
-                                   new XpGainPacket(id,delta),
-                                   connection
-                           );
+                            XpGainPayload payload = new XpGainPayload(id, delta);
+                            PacketDistributor.PLAYER.with((ServerPlayerEntity)player)
+                                    .send(payload);
                         }
                         playerMap.put(id,total);
                     })
