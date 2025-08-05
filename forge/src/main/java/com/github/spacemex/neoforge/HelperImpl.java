@@ -1,5 +1,6 @@
-package com.github.spacemex.forge;
+package com.github.spacemex.neoforge;
 
+import com.github.spacemex.forge.SkillExpNotifierForge;
 import org.slf4j.Logger;
 
 public class HelperImpl {
