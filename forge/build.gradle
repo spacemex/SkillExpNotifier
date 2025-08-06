@@ -2,6 +2,8 @@
 plugins {
     id 'com.gradleup.shadow'
 }
+println "actual_version property: " + rootProject.findProperty('actual_version')
+
 
 architectury {
     platformSetupLoomIde()
@@ -49,12 +51,19 @@ dependencies {
 }
 
 processResources {
-    inputs.property 'version', project.version
+    def actualVer = rootProject.findProperty('actual_version') ?: 'undefined'
 
-    filesMatching('META-INF/mods.toml') {
-        expand version: project.version
+    inputs.property 'version', project.version
+    inputs.property 'actual_version', actualVer
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand(
+                version: project.version,
+                actual_version: actualVer
+        )
     }
 }
+
 
 shadowJar {
     configurations = [project.configurations.shadowBundle, project.configurations.shadow]
