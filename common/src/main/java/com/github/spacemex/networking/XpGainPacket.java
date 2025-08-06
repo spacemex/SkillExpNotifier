@@ -2,7 +2,7 @@ package com.github.spacemex.networking;
 
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-
+@Deprecated
 public record XpGainPacket(Identifier categoryId, int delta) {
 
     public static void encode(XpGainPacket pkt, PacketByteBuf buf) {
