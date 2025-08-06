@@ -250,8 +250,9 @@ public class CustomToastComponent {
             float y = anchorY + offsetY + slideY;
 
             ctx.getMatrices().translate(x, y, 800f);
-
-            Toast.Visibility newVis = toast.draw(ctx, null, now - visibleTime);
+            toast.update(minecraft.getToastManager(),now);
+            toast.draw(ctx, minecraft.textRenderer, now - visibleTime);
+            Toast.Visibility newVis = toast.getVisibility();
             ctx.getMatrices().pop();
 
             if (newVis != visibility) {
