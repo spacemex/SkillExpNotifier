@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
+loaderVersion = "[46,)"
 issueTrackerURL = "https://github.com/spacemex/SkillExpNotifier/issues"
 license = "MIT"
 
@@ -17,14 +17,14 @@ displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
 [[dependencies.skillexpnotifier]]
 modId = "forge"
 mandatory = true
-versionRange = "[47,)"
+versionRange = "[46,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20.1,)"
+versionRange = "[1.20,)"
 ordering = "NONE"
 side = "BOTH"
 
