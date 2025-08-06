@@ -12,6 +12,8 @@ import net.minecraft.client.toast.Toast;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fStack;
 
 import java.util.*;
 
@@ -157,7 +159,8 @@ public class CustomToastComponent {
                 ease = 1f - ease;
             }
 
-            ctx.getMatrices().push();
+            Matrix3x2fStack matrices = ctx.getMatrices();
+            Matrix3x2f backup = new Matrix3x2f(matrices);
 
             String anchor = config().getString("Toast-Rendering.Anchor-Point", "bottom-left").toLowerCase();
             String dir = config().getString("Settings.Animation-Direction", "down").toLowerCase();
@@ -249,11 +252,13 @@ public class CustomToastComponent {
             float x = anchorX + offsetX + slideX;
             float y = anchorY + offsetY + slideY;
 
-            ctx.getMatrices().translate(x, y, 800f);
+            matrices.translate(x, y);
+
             toast.update(minecraft.getToastManager(),now);
             toast.draw(ctx, minecraft.textRenderer, now - visibleTime);
             Toast.Visibility newVis = toast.getVisibility();
-            ctx.getMatrices().pop();
+
+            matrices.set(backup);
 
             if (newVis != visibility) {
                 animationTime = now - (long) ((1f - ease) * getAnimationTime());
