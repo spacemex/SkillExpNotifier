@@ -17,21 +17,21 @@ displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
 [[dependencies.skillexpnotifier]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.0,)"
+versionRange = "[21.3,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21,)"
+versionRange = "[1.2.3,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "architectury"
 type = "required"
-versionRange = "[13.0.8,)"
+versionRange = "[14.0.4,)"
 ordering = "AFTER"
 side = "BOTH"
 
