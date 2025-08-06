@@ -2,17 +2,18 @@ package com.github.spacemex.client;
 
 import com.github.spacemex.config.ConfigReader;
 import com.github.spacemex.yml.YamlConfigUtil;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.toast.Toast;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix3x2fStack;
 
 import java.util.function.BiConsumer;
 
@@ -22,7 +23,7 @@ public class XpToast implements Toast {
         return new ConfigReader().getConfig();
     }
 
-    private static final Identifier BG = Identifier.tryParse("minecraft:textures/gui/sprites/toast/advancement.png");
+    private static final Identifier BG = Identifier.ofVanilla("toast/advancement");
     private final Identifier categoryId;
     private int gained;
     private long lastUpdateTime;
@@ -69,12 +70,15 @@ public class XpToast implements Toast {
         if (!config().getBoolean("Toast-Rendering.Disable-Background", true)) {
             if (config().getBoolean("Toast-Rendering.Background-Translucent", false)) {
                 float a = config().getFloat("Toast-Rendering.Background-alpha", 127) / 255f;
-                RenderSystem.setShaderColor(1f, 1f, 1f, a);
+                int argb = ((int) a << 24) | 0xFFFFFF;
+                ctx.drawTexture(RenderPipelines.GUI_TEXTURED,BG,0,0,0,0,bgW,bgH,256,256,
+                        argb);
             }
-            ctx.drawGuiTexture(RenderLayer::getGuiTextured, BG, 0, 0, bgW, bgH);
-            //ctx.drawTexture(BG, 0, 0, 0, 0, bgW, bgH);
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            ctx.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BG, 0, 0, bgW, bgH);
         }
+
+        Matrix3x2fStack matrices = ctx.getMatrices();
+        Matrix3x2f backup = new Matrix3x2f(matrices);
 
         String path = categoryId.getPath();
         String title = formatCategoryName(path);
@@ -82,21 +86,19 @@ public class XpToast implements Toast {
             ItemStack iconStack = EntryRegistry.getIconFor(path);
             if (!iconStack.isEmpty()) {
                 float iconScale = config().getFloat("Icon-Settings.Size", 12) / 16f;
-                ctx.getMatrices().push();
-                ctx.getMatrices().scale(iconScale, iconScale, 1f);
+                matrices.scale(iconScale,iconScale);
 
                 int x0 = (int) (config().getInt("Icon-Settings.X-Offset", 14) / iconScale);
                 int y0 = (int) (config().getInt("Icon-Settings.Y-Offset", 2) / iconScale);
 
                 ctx.drawItem(iconStack, x0, y0);
-                ctx.getMatrices().pop();
+                matrices.set(backup);
             }
         }
 
         BiConsumer<String, Integer> drawTitle = (text, y) -> {
-            ctx.getMatrices().push();
             float scale = config().getFloat("Title-Settings.Size", 6) / 9f;
-            ctx.getMatrices().scale(scale, scale, 1f);
+            matrices.scale(scale,scale);
             int x = (int) (30f / scale);
             int yy = (int) (y / scale);
 
@@ -115,13 +117,12 @@ public class XpToast implements Toast {
                     : 255;
             int argb = (alpha << 24) | rgb;
             ctx.drawText(textRenderer, text, x, yy, argb, false);
-            ctx.getMatrices().pop();
+            matrices.set(backup);
         };
 
         BiConsumer<String, Integer> drawExp = (text, y) -> {
-            ctx.getMatrices().push();
             float scale = config().getFloat("Experience-Settings.Size", 6) / 9f;
-            ctx.getMatrices().scale(scale, scale, 1f);
+            matrices.scale(scale,scale);
             int x = (int) (30f / scale);
             int yy = (int) (y / scale);
 
@@ -140,7 +141,7 @@ public class XpToast implements Toast {
                     : 255;
             int argb = (alpha << 24) | rgb;
             ctx.drawText(textRenderer, text, x, yy, argb, false);
-            ctx.getMatrices().pop();
+            matrices.set(backup);
         };
 
         if (config().getBoolean("Toast-Animation.Inline", true)) {
