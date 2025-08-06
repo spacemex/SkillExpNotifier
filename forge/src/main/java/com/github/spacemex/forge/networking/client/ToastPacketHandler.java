@@ -3,8 +3,9 @@ package com.github.spacemex.forge.networking.client;
 import com.github.spacemex.client.XpToast;
 import com.github.spacemex.networking.XpGainPacket;
 import net.minecraft.util.Identifier;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+
 
 @OnlyIn(Dist.CLIENT)
 public class ToastPacketHandler {
