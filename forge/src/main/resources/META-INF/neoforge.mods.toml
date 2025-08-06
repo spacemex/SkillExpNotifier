@@ -1,11 +1,11 @@
 modLoader = "javafml"
-loaderVersion = "[1,)"
+loaderVersion = "[4,)"
 issueTrackerURL = "https://github.com/spacemex/SkillExpNotifier/issues"
 license = "MIT"
 
 [[mods]]
 modId = "skillexpnotifier"
-version = "${version}"
+version = "${actual_version}"
 displayName = "SkillExpNotifier"
 authors = "Space_Mex"
 description = '''
@@ -16,26 +16,28 @@ displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
 
 [[dependencies.skillexpnotifier]]
 modId = "neoforge"
-mandatory = true
-versionRange = "[20.4,)"
+type = "required"
+versionRange = "[21.0,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "minecraft"
-mandatory = true
-versionRange = "[1.20.2,)"
+type = "required"
+versionRange = "[1.21,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "architectury"
-mandatory = true
-versionRange = "[10.0.7,)"
+type = "required"
+versionRange = "[13.0.8,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "puffish_skills"
-mandatory = true
+type = "required"
 versionRange = "[0.16.0,)"
+ordering = "NONE"
+side = "BOTH"
