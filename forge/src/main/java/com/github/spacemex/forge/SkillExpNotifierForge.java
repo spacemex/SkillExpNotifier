@@ -26,13 +26,14 @@ public final class SkillExpNotifierForge {
     public static Logger LOGGER = LoggerFactory.getLogger(SkillExpNotifier.MOD_ID);
     public static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            Identifier.fromNamespaceAndPath(SkillExpNotifier.MOD_ID, "network"),
+            new Identifier(SkillExpNotifier.MOD_ID, "network"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals
     );
-    public SkillExpNotifierForge(final FMLJavaModLoadingContext modLoadingContext) {
-        IEventBus eventBus = modLoadingContext.getModEventBus();
+    public SkillExpNotifierForge() {
+        FMLJavaModLoadingContext ctx = FMLJavaModLoadingContext.get();
+        IEventBus eventBus = ctx.getModEventBus();
         EventBuses.registerModEventBus(SkillExpNotifier.MOD_ID,eventBus);
         SkillExpNotifier.init();
         eventBus.addListener(this::onCommonSetup);
