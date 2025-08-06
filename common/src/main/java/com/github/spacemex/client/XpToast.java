@@ -6,7 +6,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.toast.Toast;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.item.ItemStack;
@@ -39,7 +41,131 @@ public class XpToast implements Toast {
         this.gained += delta;
         this.lastUpdateTime = System.currentTimeMillis();
     }
+
+    // Added in 1.21.3
+
     @Override
+    public Visibility getVisibility() {
+        long now = System.currentTimeMillis();
+        return (now - lastUpdateTime) < config().getLong("Toast-Animation.Stack-XP-Timer", 5000)
+                ? Visibility.SHOW
+                : Visibility.HIDE;
+    }
+    // Added in 1.21.3
+
+    @Override
+    public void update(ToastManager manager, long time) {
+
+    }
+    // Added in 1.21.3
+    @Override
+    public void draw(DrawContext ctx, TextRenderer textRenderer, long startTime) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        long now = System.currentTimeMillis();
+
+        int bgH = getHeight();
+        int bgW = getWidth();
+
+        if (!config().getBoolean("Toast-Rendering.Disable-Background", true)) {
+            if (config().getBoolean("Toast-Rendering.Background-Translucent", false)) {
+                float a = config().getFloat("Toast-Rendering.Background-alpha", 127) / 255f;
+                RenderSystem.setShaderColor(1f, 1f, 1f, a);
+            }
+            ctx.drawGuiTexture(RenderLayer::getGuiTextured, BG, 0, 0, bgW, bgH);
+            //ctx.drawTexture(BG, 0, 0, 0, 0, bgW, bgH);
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        }
+
+        String path = categoryId.getPath();
+        String title = formatCategoryName(path);
+        if (config().getBoolean("Icon-Settings.Enabled", true)) {
+            ItemStack iconStack = EntryRegistry.getIconFor(path);
+            if (!iconStack.isEmpty()) {
+                float iconScale = config().getFloat("Icon-Settings.Size", 12) / 16f;
+                ctx.getMatrices().push();
+                ctx.getMatrices().scale(iconScale, iconScale, 1f);
+
+                int x0 = (int) (config().getInt("Icon-Settings.X-Offset", 14) / iconScale);
+                int y0 = (int) (config().getInt("Icon-Settings.Y-Offset", 2) / iconScale);
+
+                ctx.drawItem(iconStack, x0, y0);
+                ctx.getMatrices().pop();
+            }
+        }
+
+        BiConsumer<String, Integer> drawTitle = (text, y) -> {
+            ctx.getMatrices().push();
+            float scale = config().getFloat("Title-Settings.Size", 6) / 9f;
+            ctx.getMatrices().scale(scale, scale, 1f);
+            int x = (int) (30f / scale);
+            int yy = (int) (y / scale);
+
+            if (config().getBoolean("Title-Settings.Shadow", false)) {
+                int sdRgb = config().getInt("Title-Settings.Shadow-Color", 0) & 0xFFFFFF;
+                int sdAlpha = config().getBoolean("Title-Settings.Translucent", false)
+                        ? config().getInt("Title-Settings.Alpha", 127)
+                        : 255;
+                int sdArgb = (sdAlpha << 24) | sdRgb;
+                ctx.drawText(textRenderer, text, x + 1, yy + 1, sdArgb, false);
+            }
+
+            int rgb = config().getInt("Title-Settings.Color", 16755200) & 0xFFFFFF;
+            int alpha = config().getBoolean("Title-Settings.Translucent", false)
+                    ? config().getInt("Title-Settings.Alpha", 127)
+                    : 255;
+            int argb = (alpha << 24) | rgb;
+            ctx.drawText(textRenderer, text, x, yy, argb, false);
+            ctx.getMatrices().pop();
+        };
+
+        BiConsumer<String, Integer> drawExp = (text, y) -> {
+            ctx.getMatrices().push();
+            float scale = config().getFloat("Experience-Settings.Size", 6) / 9f;
+            ctx.getMatrices().scale(scale, scale, 1f);
+            int x = (int) (30f / scale);
+            int yy = (int) (y / scale);
+
+            if (config().getBoolean("Experience-Settings.Shadow", false)) {
+                int sdRgb = config().getInt("Experience-Settings.Shadow-Color", 0) & 0xFFFFFF;
+                int sdAlpha = config().getBoolean("Experience-Settings.Translucent", false)
+                        ? config().getInt("Experience-Settings.Alpha", 0)
+                        : 255;
+                int sdArgb = (sdAlpha << 24) | sdRgb;
+                ctx.drawText(textRenderer, text, x + 1, yy + 1, sdArgb, false);
+            }
+
+            int rgb = config().getInt("Experience-Settings.Color", 16755200) & 0xFFFFFF;
+            int alpha = config().getBoolean("Experience-Settings.Translucent", false)
+                    ? config().getInt("Experience-Settings.Alpha", 127)
+                    : 255;
+            int argb = (alpha << 24) | rgb;
+            ctx.drawText(textRenderer, text, x, yy, argb, false);
+            ctx.getMatrices().pop();
+        };
+
+        if (config().getBoolean("Toast-Animation.Inline", true)) {
+            String tOv = config().getString("Title-Settings.Title", "%title%")
+                    .replace("%title%", title);
+            String xOv = config().getString("Experience-Settings.Exp", " +%exp% xp")
+                    .replace("%exp%", String.valueOf(gained));
+            String combined = tOv + xOv;
+            if (config().getBoolean("Title-Settings.Bold", false) ||
+                    config().getBoolean("Experience-Settings.Bold", false))
+                combined = "§l" + combined;
+            int midY = bgH / 2 - (config().getInt("Title-Settings.Size", 6) / 2);
+            drawTitle.accept(combined, midY);
+        } else {
+            String tt = (config().getBoolean("Title-Settings.Bold", false) ? "§l" : "") + title;
+            drawTitle.accept(tt, 8);
+
+            String xp = (config().getBoolean("Experience-Settings.Bold", false) ? "§l" : "")
+                    + config().getString("Experience-Settings.Exp", " +%exp% xp")
+                    .replace("%exp%", String.valueOf(gained));
+            drawExp.accept(xp, 18);
+        }
+    }
+
+   /** Removed in 1.21.3
     public Visibility draw(DrawContext ctx, ToastManager manager, long startTime) {
         MinecraftClient mc = MinecraftClient.getInstance();
         long now = System.currentTimeMillis();
@@ -146,7 +272,7 @@ public class XpToast implements Toast {
 
         return (now - lastUpdateTime) < config().getLong("Toast-Animation.Stack-XP-Timer",5000) ?
                 Visibility.SHOW : Visibility.HIDE;
-    }
+    }*/
 
     @Override
     public Object getType() {
