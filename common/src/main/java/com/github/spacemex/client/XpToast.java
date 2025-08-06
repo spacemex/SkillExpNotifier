@@ -20,7 +20,7 @@ public class XpToast implements Toast {
         return new ConfigReader().getConfig();
     }
 
-    private static final Identifier BG = Identifier.tryParse("minecraft:textures/gui/sprites/toast/now_playing.png");
+    private static final Identifier BG = Identifier.tryParse("minecraft:textures/gui/sprites/toast/advancement.png");
     private final Identifier categoryId;
     private int gained;
     private long lastUpdateTime;
