@@ -7,15 +7,22 @@ import com.github.spacemex.networking.XpGainPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.minecraft.util.Identifier;
 
 public final class SkillExpNotifierFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         SkillExpNotifier.initClient();
 
+        HudElementRegistry.addLast(Identifier.of(SkillExpNotifier.MOD_ID, "xp_toast_id"),
+                (context, tickCounter) -> ClientNotifier.getToastComponent().render(context)
+        );
+
+        /** Removed In 1.21.6
         HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
             ClientNotifier.getToastComponent().render(drawContext);
-        });
+        });*/
 
         ClientPlayNetworking.registerGlobalReceiver(XpGainPayload.ID,(payload,context)->{
            context.client().execute(()->{
