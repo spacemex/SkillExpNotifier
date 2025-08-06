@@ -33,7 +33,7 @@ public class Config {
                 .add("Toast-Rendering.Base-Y", 0, "Vertical offset from the anchor point in pixels")
                 .add("Toast-Rendering.Height", 16, "Height of the toast background in pixels")
                 .add("Toast-Rendering.Width", 160, "Width of the toast background in pixels")
-                .add("Toast-Rendering.Background-Translucent", false, "Makes the toast background partially transparent")
+                .add("Toast-Rendering.Background-Translucent", false, "**Legacy** (Does nothing 1.21.6 and up. Do to rendering system constantly changing) Makes the toast background partially transparent")
                 .add("Toast-Rendering.Disable-Background", true, "Completely removes the toast background")
                 .add("Toast-Rendering.Background-alpha", 127, "Transparency level of the background (0-255, lower is more transparent)")
 
