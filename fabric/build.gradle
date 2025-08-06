@@ -47,12 +47,15 @@ dependencies {
 
 processResources {
     inputs.property 'version', project.version
+    inputs.property 'actual_version', rootProject.actual_version
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version
+        expand(
+                version: project.version,
+                actual_version: rootProject.actual_version
+        )
     }
 }
-
 shadowJar {
     configurations = [project.configurations.shadowBundle, project.configurations.shadow]
 
