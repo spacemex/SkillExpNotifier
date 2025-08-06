@@ -136,8 +136,11 @@ public class CustomToastComponent {
             if (animationTime < 0) {
                 animationTime = now;
                 if (config().getBoolean("Sound-Settings.Enabled", true)) {
-                    String dimKey = Objects.requireNonNull(minecraft.world).getDimensionKey().getValue().toString();
-                    if (dimKey.isEmpty()) dimKey = "minecraft:overworld";
+                    String dimKey = minecraft.world.getRegistryKey().getValue().toString();
+                    if (dimKey.isEmpty()){
+                        var world = minecraft.world.OVERWORLD;
+                        dimKey = world.getValue().toString();
+                    }
                     SoundEvent inSound = Registries.SOUND_EVENT.get(Identifier.tryParse(getSoundInForDimension(dimKey)));
                     if (inSound != null) Objects.requireNonNull(minecraft.player).playSound(inSound, 1.0F, 1.0F);
                 }
@@ -255,8 +258,11 @@ public class CustomToastComponent {
                 animationTime = now - (long) ((1f - ease) * getAnimationTime());
                 visibility = newVis;
                 if (config().getBoolean("Sound-Settings.Enabled", true)) {
-                    String dimKey = Objects.requireNonNull(minecraft.world).getDimensionKey().getValue().toString();
-                    if (dimKey.isEmpty()) dimKey = "minecraft:overworld";
+                    String dimKey = minecraft.world.getRegistryKey().getValue().toString();
+                    if (dimKey.isEmpty()) {
+                        var world = minecraft.world.OVERWORLD;
+                        dimKey = world.getValue().toString();
+                    }
                     SoundEvent outSound = Registries.SOUND_EVENT.get(Identifier.tryParse(getSoundOutForDimension(dimKey)));
                     if (outSound != null) Objects.requireNonNull(minecraft.player).playSound(outSound, 1.0F, 1.0F);
                 }
