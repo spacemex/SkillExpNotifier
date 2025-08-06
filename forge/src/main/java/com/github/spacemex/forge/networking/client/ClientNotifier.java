@@ -6,8 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
-import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 
@@ -24,10 +23,9 @@ public class ClientNotifier {
     }
 
     @SubscribeEvent
-    public static void onRenderOverlay(RenderGuiOverlayEvent.Post event){
-        if (event.getOverlay() == VanillaGuiOverlay.HOTBAR.type()){
+    public static void onRenderOverlay(RenderGuiEvent.Post event){
             render(event.getGuiGraphics());
-        }
+
     }
 
     public static void register(){
