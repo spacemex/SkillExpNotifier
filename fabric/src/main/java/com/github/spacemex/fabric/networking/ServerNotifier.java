@@ -1,7 +1,7 @@
 package com.github.spacemex.fabric.networking;
 
 import com.github.spacemex.fabric.SkillExpNotifierFabric;
-import com.github.spacemex.networking.XpGainPacket;
+import com.github.spacemex.networking.XpGainPayload;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -31,7 +31,7 @@ public class ServerNotifier {
                         int prev = playerMap.getOrDefault(id,total);
                         if (total > prev){
                            int delta = total - prev;
-                           SkillExpNotifierFabric.sendXpGainPacket(player,new XpGainPacket(id,delta));
+                           SkillExpNotifierFabric.sendXpGainPacket(player,new XpGainPayload(id,delta));
                         }
                         playerMap.put(id,total);
                     }));
