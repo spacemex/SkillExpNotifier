@@ -1,7 +1,7 @@
 package com.github.spacemex.forge.networking.client;
 
 import com.github.spacemex.client.XpToast;
-import com.github.spacemex.networking.XpGainPacket;
+import com.github.spacemex.networking.XpGainPayload;
 import net.minecraft.util.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -9,7 +9,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class ToastPacketHandler {
-    public static void onXpGain(XpGainPacket pkt){
+    public static void onXpGain(XpGainPayload pkt){
         Identifier id =  pkt.categoryId();
         int delta = pkt.delta();
 
