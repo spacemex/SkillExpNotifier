@@ -20,7 +20,7 @@ public class XpToast implements Toast {
         return new ConfigReader().getConfig();
     }
 
-    private static final Identifier BG = Identifier.tryParse("minecraft:textures/gui/sprites/toast/now_playing.png");
+    private static final Identifier BG = new Identifier("toast/advancement");
     private final Identifier categoryId;
     private int gained;
     private long lastUpdateTime;
@@ -52,7 +52,8 @@ public class XpToast implements Toast {
                 float a = config().getFloat("Toast-Rendering.Background-alpha",127) / 255f;
                 RenderSystem.setShaderColor(1f,1f,1f,a);
             }
-            ctx.drawTexture(BG,0,0,0,0,bgW,bgH);
+            ctx.drawGuiTexture(BG,0,0,bgW,bgH);
+            //ctx.drawTexture(BG,0,0,0,0,bgW,bgH);
             RenderSystem.setShaderColor(1f,1f,1f,1f);
         }
 
