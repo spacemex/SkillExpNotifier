@@ -52,7 +52,7 @@ public class XpToast implements Toast {
                 float a = config().getFloat("Toast-Rendering.Background-alpha",127) / 255f;
                 RenderSystem.setShaderColor(1f,1f,1f,a);
             }
-            ctx.drawTexture(BG,0,0,0,0,bgW,bgH);
+            ctx.drawTexture(BG, 0, 0, bgW, bgH, 0,0,160, 32, 256, 256);
             RenderSystem.setShaderColor(1f,1f,1f,1f);
         }
 
