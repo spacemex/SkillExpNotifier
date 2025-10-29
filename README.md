@@ -1,4 +1,4 @@
-[![CurseForge Downloads](https://img.shields.io/badge/Downloads-30k-E07C00?style=plastic&logo=curseforge)](https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier)
+[![CurseForge Downloads](https://img.shields.io/curseforge/dt/1290362?logo=curseforge&label=Downloads&color=E07C00&style=plastic)](https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier)
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/skillexpnotifier?style=plastic&logo=modrinth&label=Modrinth%20Downloads)](https://modrinth.com/mod/skillexpnotifier)
 [![GitHub](https://img.shields.io/badge/GitHub-View%20Source-181717?style=plastic&logo=github)](https://github.com/spacemex/SkillExpNotifier)
 
