@@ -25,7 +25,7 @@ public final class SkillExpNotifierForge {
         ServerNotifier.register();
         eventBus.addListener(this::registerPayloadHandlers);
 
-        if (FMLEnvironment.dist.isClient()){
+        if (FMLEnvironment.getDist().isClient()){
             eventBus.addListener(this::clientInit);
         }
 
