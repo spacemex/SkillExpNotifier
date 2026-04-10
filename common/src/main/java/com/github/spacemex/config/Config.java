@@ -23,8 +23,7 @@ public class Config {
                         """)
                 .add("Client-Settings.Disable", false, "Disables all rendering of toasts (client-side only)")
                 .add("Client-Settings.File-Watcher", true, "Enables the file watcher to detect config changes automatically")
-                .add("Client-Settings.Auto-Register-Data", true, "Automatically registers skill categories and assigns icons (overrides existing entries)")
-
+                .add("Client-Settings.Auto-Register-Data", true, "When iconMappings.json is missing, automatically generates mappings from detected skill categories")
                 .add("Settings.Max-Toasts", 1, "Maximum number of toasts to display simultaneously")
                 .add("Settings.Animation-Direction", "top", "Direction for toast animation and stacking (top, down, left, right)")
 
