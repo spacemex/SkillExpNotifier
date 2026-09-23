@@ -19,9 +19,10 @@ import java.util.*;
 
 @Environment(EnvType.CLIENT)
 public class CustomToastComponent {
-    private YamlConfigUtil config(){
+    private YamlConfigUtil config() {
         return new ConfigReader().getConfig();
     }
+
     private final Minecraft minecraft;
     private final List<CustomToastInstance<?>> visible = new ArrayList<>();
     private final BitSet occupiedSlots = new BitSet();
@@ -31,67 +32,67 @@ public class CustomToastComponent {
         this.minecraft = minecraft;
     }
 
-    public void addToast(Toast toast){
-        if (config().getBoolean("Client-Settings.Disable",false)) return;
-        XpToast existingVisible = getToast(XpToast.class,toast.getToken());
-        if (existingVisible != null && toast instanceof XpToast incoming){
+    public void addToast(Toast toast) {
+        if (config().getBoolean("Client-Settings.Disable", false)) return;
+        XpToast existingVisible = getToast(XpToast.class, toast.getToken());
+        if (existingVisible != null && toast instanceof XpToast incoming) {
             existingVisible.addGained(incoming.getGained());
-            Helper.getPlatformsLogger().debug("Merged visible toast {} and {}",existingVisible,toast);
+            Helper.getPlatformsLogger().debug("Merged visible toast {} and {}", existingVisible, toast);
             return;
         }
-        for (Toast queuedToast : queued){
+        for (Toast queuedToast : queued) {
             if (queuedToast instanceof XpToast queuedXp &&
-            queuedToast.getClass() == toast.getClass() &&
-                    Objects.equals(queuedToast.getToken(), toast.getToken())){
+                    queuedToast.getClass() == toast.getClass() &&
+                    Objects.equals(queuedToast.getToken(), toast.getToken())) {
                 queuedXp.addGained(((XpToast) toast).getGained());
-                Helper.getPlatformsLogger().debug("Merged queued toast {} and {}",queuedXp,toast);
+                Helper.getPlatformsLogger().debug("Merged queued toast {} and {}", queuedXp, toast);
                 return;
             }
         }
         queued.add(toast);
-        Helper.getPlatformsLogger().debug("Queued toast {}",toast);
+        Helper.getPlatformsLogger().debug("Queued toast {}", toast);
     }
 
-    public void render(GuiGraphicsExtractor ctx){
-        if (minecraft.options.hideGui) return;
+    public void render(GuiGraphicsExtractor ctx) {
+        if (minecraft.gui.hud.isHidden()) return;
 
         int screenWidth = ctx.guiWidth();
 
         Iterator<CustomToastInstance<?>> it = visible.iterator();
-        while (it.hasNext()){
+        while (it.hasNext()) {
             CustomToastInstance<?> instance = it.next();
-            if (instance.render(screenWidth,ctx)){
-                occupiedSlots.clear(instance.index,instance.index + instance.slotCount);
+            if (instance.render(screenWidth, ctx)) {
+                occupiedSlots.clear(instance.index, instance.index + instance.slotCount);
                 it.remove();
             }
         }
-        if (!queued.isEmpty() && freeSlots() > 0){
+        if (!queued.isEmpty() && freeSlots() > 0) {
             Iterator<Toast> qi = queued.iterator();
-            while (qi.hasNext() && freeSlots() > 0){
+            while (qi.hasNext() && freeSlots() > 0) {
                 Toast toast = qi.next();
                 int slots = toast.occcupiedSlotCount();
                 int idx = findFreeIndex(slots);
-                if (idx != -1){
-                    visible.add(new CustomToastInstance<>(toast,idx,slots));
-                    occupiedSlots.set(idx,idx + slots);
+                if (idx != -1) {
+                    visible.add(new CustomToastInstance<>(toast, idx, slots));
+                    occupiedSlots.set(idx, idx + slots);
                     qi.remove();
                 }
             }
         }
     }
 
-    private int freeSlots(){
+    private int freeSlots() {
         return getSlotCount() - occupiedSlots.cardinality();
     }
 
-    private int findFreeIndex(int slotCount){
+    private int findFreeIndex(int slotCount) {
         if (freeSlots() < slotCount) return -1;
         int count = 0;
-        for (int i = 0; i < getSlotCount(); i++){
-            if (occupiedSlots.get(i)){
+        for (int i = 0; i < getSlotCount(); i++) {
+            if (occupiedSlots.get(i)) {
                 count = 0;
-            }else {
-                if (++count == slotCount){
+            } else {
+                if (++count == slotCount) {
                     return i + 1 - slotCount;
                 }
             }
@@ -100,18 +101,19 @@ public class CustomToastComponent {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Toast> T getToast(Class<? extends T> pToastClass, Object token){
-        for (CustomToastInstance<?> inst : visible){
+    public <T extends Toast> T getToast(Class<? extends T> pToastClass, Object token) {
+        for (CustomToastInstance<?> inst : visible) {
             Toast t = inst.toast;
             if (pToastClass.isAssignableFrom(t.getClass()) && t.getToken().equals(token))
                 return (T) t;
         }
-        for (Toast t : queued){
+        for (Toast t : queued) {
             if (pToastClass.isAssignableFrom(t.getClass()) && t.getToken().equals(token))
                 return (T) t;
         }
         return null;
     }
+
     @Environment(EnvType.CLIENT)
 
     private class CustomToastInstance<T extends Toast> {
@@ -133,13 +135,13 @@ public class CustomToastComponent {
         }
 
         @SuppressWarnings("all")
-        public boolean render(int screenWidth, GuiGraphicsExtractor  ctx) {
+        public boolean render(int screenWidth, GuiGraphicsExtractor ctx) {
             long now = System.currentTimeMillis();
             if (animationTime < 0) {
                 animationTime = now;
                 if (config().getBoolean("Sound-Settings.Enabled", true)) {
                     String dimKey = minecraft.level.dimension().identifier().toString();
-                    if (dimKey.isEmpty()){
+                    if (dimKey.isEmpty()) {
                         var world = minecraft.level.OVERWORLD;
                         dimKey = world.identifier().toString();
                     }
@@ -254,7 +256,7 @@ public class CustomToastComponent {
 
             matrices.translate(x, y);
 
-            toast.update(minecraft.getToastManager(),now);
+            toast.update(minecraft.gui.toastManager(), now);
             toast.extractRenderState(ctx, minecraft.font, now - visibleTime);
             Toast.Visibility newVis = toast.getWantedVisibility();
 
@@ -284,18 +286,22 @@ public class CustomToastComponent {
             return finished;
         }
     }
-    private int getBaseX(){
-        return config().getInt("Toast-Rendering.Base-X",0);
+
+    private int getBaseX() {
+        return config().getInt("Toast-Rendering.Base-X", 0);
     }
-    private int getBaseY(){
-        return config().getInt("Toast-Rendering.Base-Y",0);
+
+    private int getBaseY() {
+        return config().getInt("Toast-Rendering.Base-Y", 0);
     }
-    private int getSlotCount(){
-        return Math.max(1,config().getInt("Settings.Max-Toasts",1));
+
+    private int getSlotCount() {
+        return Math.max(1, config().getInt("Settings.Max-Toasts", 1));
     }
-    private long getAnimationTime(){
-        return config().getLong("Toast-Animation.Animation-Time",1000) <= 0 ?
-                1500L : config().getLong("Toast-Animation.Animation-Time",1000);
+
+    private long getAnimationTime() {
+        return config().getLong("Toast-Animation.Animation-Time", 1000) <= 0 ?
+                1500L : config().getLong("Toast-Animation.Animation-Time", 1000);
     }
 
     public static String getSoundInForDimension(String dimId) {
