@@ -6,16 +6,15 @@ import com.github.spacemex.fabric.networking.client.ClientNotifier;
 import com.github.spacemex.networking.XpGainPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public final class SkillExpNotifierFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         SkillExpNotifier.initClient();
 
-        HudElementRegistry.addLast(Identifier.of(SkillExpNotifier.MOD_ID, "xp_toast_id"),
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(SkillExpNotifier.MOD_ID, "xp_toast_id"),
                 (context, tickCounter) -> ClientNotifier.getToastComponent().render(context)
         );
 

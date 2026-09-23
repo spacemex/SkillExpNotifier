@@ -11,9 +11,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
 
 @Environment(EnvType.CLIENT)
 public class EntryRegistry {
-    private record Entry(Pattern pattern, ItemStack icon) {}
+    private record Entry(Pattern pattern, String iconId) {
+    }
 
     private static final List<Entry> ENTRIES = new ArrayList<>();
 
@@ -39,11 +40,14 @@ public class EntryRegistry {
         try {
             Files.createDirectories(configFile.getParent());
 
-            boolean autoRegister = config().getBoolean("Client-Settings.Auto-Register-Data", true);
+            boolean autoRegister = config().getBoolean(
+                    "Client-Settings.Auto-Register-Data", true
+            );
 
-            // Only generate the file the first time.
             if (!Files.exists(configFile)) {
-                JsonArray generatedEntries = autoRegister ? buildAutoEntries(gameDir) : new JsonArray();
+                JsonArray generatedEntries = autoRegister
+                        ? buildAutoEntries(gameDir)
+                        : new JsonArray();
 
                 if (generatedEntries.isEmpty()) {
                     generatedEntries = buildDefaultEntries();
@@ -54,7 +58,9 @@ public class EntryRegistry {
 
             readEntries(configFile);
         } catch (IOException e) {
-            Helper.getPlatformsLogger().error("Failed loading IconMappings.json", e);
+            Helper.getPlatformsLogger().error(
+                    "Failed loading iconMappings.json", e
+            );
         }
     }
 
@@ -87,7 +93,9 @@ public class EntryRegistry {
             JsonElement root = JsonParser.parseReader(reader);
 
             if (!root.isJsonArray()) {
-                Helper.getPlatformsLogger().warn("IconMappings.json isn't an array, skipping.");
+                Helper.getPlatformsLogger().warn(
+                        "iconMappings.json isn't an array, skipping."
+                );
                 return;
             }
 
@@ -103,17 +111,20 @@ public class EntryRegistry {
                 JsonElement iconEl = obj.get("icon");
 
                 if (regexEl == null || iconEl == null) {
-                    Helper.getPlatformsLogger().warn("Skipping invalid icon mapping entry: {}", obj);
+                    Helper.getPlatformsLogger().warn(
+                            "Skipping invalid icon mapping entry: {}", obj
+                    );
                     continue;
                 }
 
                 String regex = regexEl.getAsString();
                 String iconId = iconEl.getAsString();
 
-                Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-                ItemStack iconStack = parseIcon(iconId);
+                Pattern pattern = Pattern.compile(
+                        regex, Pattern.CASE_INSENSITIVE
+                );
 
-                ENTRIES.add(new Entry(pattern, iconStack));
+                ENTRIES.add(new Entry(pattern, iconId));
             }
         }
     }
@@ -122,16 +133,20 @@ public class EntryRegistry {
         Identifier identifier = Identifier.tryParse(iconId);
 
         if (identifier == null) {
-            Helper.getPlatformsLogger().warn("Invalid item identifier in iconMappings.json: {}", iconId);
+            Helper.getPlatformsLogger().warn(
+                    "Invalid item identifier in iconMappings.json: {}", iconId
+            );
             return ItemStack.EMPTY;
         }
 
-        if (!Registries.ITEM.containsId(identifier)) {
-            Helper.getPlatformsLogger().warn("Unknown item in iconMappings.json: {}", iconId);
+        if (!BuiltInRegistries.ITEM.containsKey(identifier)) {
+            Helper.getPlatformsLogger().warn(
+                    "Unknown item in iconMappings.json: {}", iconId
+            );
             return ItemStack.EMPTY;
         }
 
-        return new ItemStack(Registries.ITEM.get(identifier));
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(identifier));
     }
 
     private static JsonObject makeEntry(String regex, String icon) {
@@ -143,8 +158,8 @@ public class EntryRegistry {
 
     public static ItemStack getIconFor(String categoryPath) {
         for (Entry entry : ENTRIES) {
-            if (entry.pattern.matcher(categoryPath).matches()) {
-                return entry.icon.copy();
+            if (entry.pattern().matcher(categoryPath).matches()) {
+                return parseIcon(entry.iconId());
             }
         }
 

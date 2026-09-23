@@ -2,7 +2,7 @@ package com.github.spacemex.forge.networking.client;
 
 import com.github.spacemex.client.XpToast;
 import com.github.spacemex.networking.XpGainPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 

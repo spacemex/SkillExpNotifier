@@ -3,9 +3,9 @@ package com.github.spacemex.fabric.networking;
 import com.github.spacemex.fabric.SkillExpNotifierFabric;
 import com.github.spacemex.networking.XpGainPayload;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.puffish.skillsmod.api.SkillsAPI;
 
 import java.util.HashMap;
@@ -20,8 +20,8 @@ public class ServerNotifier {
     }
 
     private static void tick(MinecraftServer server){
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()){
-            UUID uuid = player.getUuid();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()){
+            UUID uuid = player.getUUID();
             var playerMap = lastTotals.computeIfAbsent(uuid,__ -> new HashMap<>());
 
             SkillsAPI.streamCategories().forEach(cat ->

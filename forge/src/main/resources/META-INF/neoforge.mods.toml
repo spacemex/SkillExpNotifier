@@ -1,7 +1,7 @@
 modLoader = "javafml"
-loaderVersion = "[4,)"
-issueTrackerURL = "https://github.com/spacemex/SkillExpNotifier/issues"
+loaderVersion = "[1,)"
 license = "MIT"
+issueTrackerURL = "https://github.com/spacemex/SkillExpNotifier/issues"
 
 [[mods]]
 modId = "skillexpnotifier"
@@ -9,7 +9,7 @@ version = "${actual_version}"
 displayName = "SkillExpNotifier"
 authors = "Space_Mex"
 description = '''
-A Simple Mod For Displaying A Toast For Pufferfish Skills Api
+A simple mod for displaying a toast for Pufferfish's Skills API.
 '''
 logoFile = "assets/skillexpnotifier/icon.png"
 displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
@@ -17,21 +17,21 @@ displayURL = "https://www.curseforge.com/minecraft/mc-mods/skillexpnotifier"
 [[dependencies.skillexpnotifier]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.3,)"
+versionRange = "[26.1,26.2)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.2.3,)"
+versionRange = "[26.1,26.2)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.skillexpnotifier]]
 modId = "architectury"
 type = "required"
-versionRange = "[14.0.4,)"
+versionRange = "[20.0.4,21.0.0)"
 ordering = "AFTER"
 side = "BOTH"
 

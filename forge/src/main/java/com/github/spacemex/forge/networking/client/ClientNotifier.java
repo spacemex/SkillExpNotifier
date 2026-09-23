@@ -1,8 +1,8 @@
 package com.github.spacemex.forge.networking.client;
 
 import com.github.spacemex.client.CustomToastComponent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -12,9 +12,9 @@ import net.neoforged.neoforge.common.NeoForge;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientNotifier {
-    private static final CustomToastComponent TOASTS = new CustomToastComponent(MinecraftClient.getInstance());
+    private static final CustomToastComponent TOASTS = new CustomToastComponent(Minecraft.getInstance());
 
-    public static void render(DrawContext context){
+    public static void render(GuiGraphicsExtractor context){
         TOASTS.render(context);
     }
 

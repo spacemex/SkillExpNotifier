@@ -6,12 +6,12 @@ import com.github.spacemex.yml.YamlConfigUtil;
 import com.google.common.collect.Queues;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.registry.Registries;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 
@@ -22,18 +22,18 @@ public class CustomToastComponent {
     private YamlConfigUtil config(){
         return new ConfigReader().getConfig();
     }
-    private final MinecraftClient minecraft;
-    private final List<CustomToastInstance<?>> visable = new ArrayList<>();
+    private final Minecraft minecraft;
+    private final List<CustomToastInstance<?>> visible = new ArrayList<>();
     private final BitSet occupiedSlots = new BitSet();
     private final Deque<Toast> queued = Queues.newArrayDeque();
 
-    public CustomToastComponent(MinecraftClient minecraft) {
+    public CustomToastComponent(Minecraft minecraft) {
         this.minecraft = minecraft;
     }
 
     public void addToast(Toast toast){
         if (config().getBoolean("Client-Settings.Disable",false)) return;
-        XpToast existingVisible = getToast(XpToast.class,toast.getType());
+        XpToast existingVisible = getToast(XpToast.class,toast.getToken());
         if (existingVisible != null && toast instanceof XpToast incoming){
             existingVisible.addGained(incoming.getGained());
             Helper.getPlatformsLogger().debug("Merged visible toast {} and {}",existingVisible,toast);
@@ -42,7 +42,7 @@ public class CustomToastComponent {
         for (Toast queuedToast : queued){
             if (queuedToast instanceof XpToast queuedXp &&
             queuedToast.getClass() == toast.getClass() &&
-                    Objects.equals(queuedToast.getType(), toast.getType())){
+                    Objects.equals(queuedToast.getToken(), toast.getToken())){
                 queuedXp.addGained(((XpToast) toast).getGained());
                 Helper.getPlatformsLogger().debug("Merged queued toast {} and {}",queuedXp,toast);
                 return;
@@ -52,12 +52,12 @@ public class CustomToastComponent {
         Helper.getPlatformsLogger().debug("Queued toast {}",toast);
     }
 
-    public void render(DrawContext ctx){
-        if (minecraft.options.hudHidden) return;
+    public void render(GuiGraphicsExtractor ctx){
+        if (minecraft.options.hideGui) return;
 
-        int screenWidth = ctx.getScaledWindowWidth();
+        int screenWidth = ctx.guiWidth();
 
-        Iterator<CustomToastInstance<?>> it = visable.iterator();
+        Iterator<CustomToastInstance<?>> it = visible.iterator();
         while (it.hasNext()){
             CustomToastInstance<?> instance = it.next();
             if (instance.render(screenWidth,ctx)){
@@ -69,10 +69,10 @@ public class CustomToastComponent {
             Iterator<Toast> qi = queued.iterator();
             while (qi.hasNext() && freeSlots() > 0){
                 Toast toast = qi.next();
-                int slots = toast.getRequiredSpaceCount();
+                int slots = toast.occcupiedSlotCount();
                 int idx = findFreeIndex(slots);
                 if (idx != -1){
-                    visable.add(new CustomToastInstance<>(toast,idx,slots));
+                    visible.add(new CustomToastInstance<>(toast,idx,slots));
                     occupiedSlots.set(idx,idx + slots);
                     qi.remove();
                 }
@@ -101,13 +101,13 @@ public class CustomToastComponent {
 
     @SuppressWarnings("unchecked")
     public <T extends Toast> T getToast(Class<? extends T> pToastClass, Object token){
-        for (CustomToastInstance<?> inst : visable){
+        for (CustomToastInstance<?> inst : visible){
             Toast t = inst.toast;
-            if (pToastClass.isAssignableFrom(t.getClass()) && t.getType().equals(token))
+            if (pToastClass.isAssignableFrom(t.getClass()) && t.getToken().equals(token))
                 return (T) t;
         }
         for (Toast t : queued){
-            if (pToastClass.isAssignableFrom(t.getClass()) && t.getType().equals(token))
+            if (pToastClass.isAssignableFrom(t.getClass()) && t.getToken().equals(token))
                 return (T) t;
         }
         return null;
@@ -133,17 +133,17 @@ public class CustomToastComponent {
         }
 
         @SuppressWarnings("all")
-        public boolean render(int screenWidth, DrawContext ctx) {
+        public boolean render(int screenWidth, GuiGraphicsExtractor  ctx) {
             long now = System.currentTimeMillis();
             if (animationTime < 0) {
                 animationTime = now;
                 if (config().getBoolean("Sound-Settings.Enabled", true)) {
-                    String dimKey = minecraft.world.getRegistryKey().getValue().toString();
+                    String dimKey = minecraft.level.dimension().identifier().toString();
                     if (dimKey.isEmpty()){
-                        var world = minecraft.world.OVERWORLD;
-                        dimKey = world.getValue().toString();
+                        var world = minecraft.level.OVERWORLD;
+                        dimKey = world.identifier().toString();
                     }
-                    SoundEvent inSound = Registries.SOUND_EVENT.get(Identifier.tryParse(getSoundInForDimension(dimKey)));
+                    SoundEvent inSound = BuiltInRegistries.SOUND_EVENT.getValue(Identifier.tryParse(getSoundInForDimension(dimKey)));
                     if (inSound != null) Objects.requireNonNull(minecraft.player).playSound(inSound, 1.0F, 1.0F);
                 }
             }
@@ -159,7 +159,7 @@ public class CustomToastComponent {
                 ease = 1f - ease;
             }
 
-            Matrix3x2fStack matrices = ctx.getMatrices();
+            Matrix3x2fStack matrices = ctx.pose();
             Matrix3x2f backup = new Matrix3x2f(matrices);
 
             String anchor = config().getString("Toast-Rendering.Anchor-Point", "bottom-left").toLowerCase();
@@ -170,8 +170,8 @@ public class CustomToastComponent {
             boolean isDown = dir.equals("down") || (!isLeft && !isRight && !isTop);
             boolean noSlide = config().getBoolean("Toast-Animation.No-Slide", false);
 
-            int toastW = toast.getWidth(), toastH = toast.getHeight();
-            int screenH = ctx.getScaledWindowHeight();
+            int toastW = toast.width(), toastH = toast.height();
+            int screenH = ctx.guiHeight();
 
             // Base coordinates for the anchor point
             float anchorX, anchorY;
@@ -255,8 +255,8 @@ public class CustomToastComponent {
             matrices.translate(x, y);
 
             toast.update(minecraft.getToastManager(),now);
-            toast.draw(ctx, minecraft.textRenderer, now - visibleTime);
-            Toast.Visibility newVis = toast.getVisibility();
+            toast.extractRenderState(ctx, minecraft.font, now - visibleTime);
+            Toast.Visibility newVis = toast.getWantedVisibility();
 
             matrices.set(backup);
 
@@ -264,12 +264,12 @@ public class CustomToastComponent {
                 animationTime = now - (long) ((1f - ease) * getAnimationTime());
                 visibility = newVis;
                 if (config().getBoolean("Sound-Settings.Enabled", true)) {
-                    String dimKey = minecraft.world.getRegistryKey().getValue().toString();
+                    String dimKey = minecraft.level.dimension().identifier().toString();
                     if (dimKey.isEmpty()) {
-                        var world = minecraft.world.OVERWORLD;
-                        dimKey = world.getValue().toString();
+                        var world = minecraft.level.OVERWORLD;
+                        dimKey = world.identifier().toString();
                     }
-                    SoundEvent outSound = Registries.SOUND_EVENT.get(Identifier.tryParse(getSoundOutForDimension(dimKey)));
+                    SoundEvent outSound = BuiltInRegistries.SOUND_EVENT.getValue(Identifier.tryParse(getSoundOutForDimension(dimKey)));
                     if (outSound != null) Objects.requireNonNull(minecraft.player).playSound(outSound, 1.0F, 1.0F);
                 }
             }

@@ -11,7 +11,7 @@ public final class SkillExpNotifier {
     public static final String MOD_ID = "skillexpnotifier";
 
     public static void init() {
-        Helper.getPlatformsLogger().info("Finally, Hello At Last World ~ " + MOD_ID);
+        Helper.getPlatformsLogger().info(MOD_ID + " WERE BACK BABY!");
     }
 
     public static void initClient() {

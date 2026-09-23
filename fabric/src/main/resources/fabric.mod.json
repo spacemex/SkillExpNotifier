@@ -27,8 +27,8 @@
   ],
   "depends": {
     "fabricloader": ">=0.16.4",
-    "minecraft": "~1.21",
-    "java": ">=21",
+    "minecraft": "~26.1",
+    "java": ">=25",
     "architectury": ">=13.0.1",
     "fabric-api": "*",
     "puffish_skills": ">=0.16.0"

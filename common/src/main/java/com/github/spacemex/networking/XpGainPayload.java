@@ -1,30 +1,30 @@
 package com.github.spacemex.networking;
 
 import com.github.spacemex.SkillExpNotifier;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
-public record XpGainPayload(Identifier categoryId, int delta) implements CustomPayload {
+public record XpGainPayload(Identifier categoryId, int delta) implements CustomPacketPayload {
 
-    public static final Id<XpGainPayload> ID =
-            new Id<>(Identifier.of(SkillExpNotifier.MOD_ID, "xp_gain"));
-    public static final PacketCodec<PacketByteBuf, Identifier> IDENTIFIER_CODEC =
-            PacketCodec.of(
-                    (id, buf) -> buf.writeString(id.toString()),
-                    (buf) -> Identifier.of(buf.readString())
+    public static final Type<XpGainPayload> ID =
+            new Type<>(Identifier.fromNamespaceAndPath(SkillExpNotifier.MOD_ID, "xp_gain"));
+    public static final StreamCodec<FriendlyByteBuf, Identifier> IDENTIFIER_CODEC =
+            StreamCodec.ofMember(
+                    (id, buf) -> buf.writeUtf(id.toString()),
+                    (buf) -> Identifier.parse(buf.readUtf())
             );
-    public static final PacketCodec<PacketByteBuf, XpGainPayload> CODEC =
-            PacketCodec.tuple(
+    public static final StreamCodec<FriendlyByteBuf, XpGainPayload> CODEC =
+            StreamCodec.composite(
                     IDENTIFIER_CODEC, XpGainPayload::categoryId,
-                    PacketCodecs.VAR_INT, XpGainPayload::delta,
+                    ByteBufCodecs.VAR_INT, XpGainPayload::delta,
                     XpGainPayload::new
             );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

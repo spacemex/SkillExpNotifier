@@ -4,15 +4,15 @@ import com.github.spacemex.config.ConfigReader;
 import com.github.spacemex.yml.YamlConfigUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 
@@ -23,7 +23,7 @@ public class XpToast implements Toast {
         return new ConfigReader().getConfig();
     }
 
-    private static final Identifier BG = Identifier.ofVanilla("toast/advancement");
+    private static final Identifier BG = Identifier.withDefaultNamespace("toast/advancement");
     private final Identifier categoryId;
     private int gained;
     private long lastUpdateTime;
@@ -48,9 +48,9 @@ public class XpToast implements Toast {
     private final int expShadowARGB, expARGB;
     private final float expScale;
     private final String expPattern;
-    private OrderedText preTitleLine;
-    private OrderedText preExpLine;
-    private OrderedText preCombinedLine;
+    private FormattedCharSequence preTitleLine;
+    private FormattedCharSequence preExpLine;
+    private FormattedCharSequence preCombinedLine;
     private int combinedBaselineY;
 
     public XpToast(Identifier categoryId, int gained) {
@@ -118,11 +118,11 @@ public class XpToast implements Toast {
 
         if (inline) {
             String combined = titleStr + expStr;
-            this.preCombinedLine = Text.literal(combined).asOrderedText();
-            this.combinedBaselineY = bgH / 2 - (int)(6 / 2f);
+            this.preCombinedLine = Component.literal(combined).getVisualOrderText();
+            this.combinedBaselineY = bgH / 2 - (int) (6 / 2f);
         } else {
-            this.preTitleLine = Text.literal(titleStr).asOrderedText();
-            this.preExpLine   = Text.literal(expStr).asOrderedText();
+            this.preTitleLine = Component.literal(titleStr).getVisualOrderText();
+            this.preExpLine = Component.literal(expStr).getVisualOrderText();
         }
     }
 
@@ -132,10 +132,12 @@ public class XpToast implements Toast {
         rebuildTextLayouts();
     }
 
-    int getGained() { return gained; }
+    int getGained() {
+        return gained;
+    }
 
     @Override
-    public Visibility getVisibility() {
+    public Visibility getWantedVisibility() {
         long now = System.currentTimeMillis();
         return (now - lastUpdateTime) < stackTimerMs ? Visibility.SHOW : Visibility.HIDE;
     }
@@ -145,59 +147,165 @@ public class XpToast implements Toast {
     }
 
     @Override
-    public void draw(DrawContext ctx, TextRenderer textRenderer, long startTime) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, Font textRenderer, long startTime) {
         if (bgEnabled) {
-            if (bgTranslucent) {
-                int argb = ((int)(bgAlpha * 255) << 24) | 0xFFFFFF;
-                ctx.drawTexture(RenderPipelines.GUI_TEXTURED, BG,
-                        0, 0, 0, 0, bgW, bgH, 256, 256, argb);
-            } else {
-                ctx.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BG, 0, 0, bgW, bgH);
-            }
+            int argb = bgTranslucent ? ((int) (bgAlpha * 255) << 24) | 0xFFFFFF : 0xFFFFFFFF;
+            ctx.blitSprite(RenderPipelines.GUI_TEXTURED, BG,
+                    0, 0,
+                    bgW, bgH,
+                    argb
+            );
         }
 
-        Matrix3x2fStack m = ctx.getMatrices();
+        Matrix3x2fStack m = ctx.pose();
         Matrix3x2f backup = new Matrix3x2f(m);
 
-        if (iconEnabled && !iconStack.isEmpty()) {
-            m.scale(iconScale, iconScale);
-            int x0 = (int)(iconX / iconScale);
-            int y0 = (int)(iconY / iconScale);
-            ctx.drawItem(iconStack, x0, y0);
-            m.set(backup);
-        }
+        try {
+            if (iconEnabled && !iconStack.isEmpty()) {
+                m.scale(iconScale, iconScale);
 
-        if (inline) {
-            float s = titleScale;
-            m.scale(s, s);
-            int x = (int)(30f / s);
-            int y = (int)(combinedBaselineY / s);
-            if (titleShadow) ctx.drawText(textRenderer, preCombinedLine, x + 1, y + 1, titleShadowARGB, false);
-            ctx.drawText(textRenderer, preCombinedLine, x, y, titleARGB, false);
-            m.set(backup);
-        } else {
-            float ts = titleScale;
-            m.scale(ts, ts);
-            int tx = (int)(30f / ts);
-            int ty = (int)(8f / ts);
-            if (titleShadow) ctx.drawText(textRenderer, preTitleLine, tx + 1, ty + 1, titleShadowARGB, false);
-            ctx.drawText(textRenderer, preTitleLine, tx, ty, titleARGB, false);
-            m.set(backup);
+                int x0 = (int) (iconX / iconScale);
+                int y0 = (int) (iconY / iconScale);
 
-            float es = expScale;
-            m.scale(es, es);
-            int ex = (int)(30f / es);
-            int ey = (int)(18f / es);
-            if (expShadow) ctx.drawText(textRenderer, preExpLine, ex + 1, ey + 1, expShadowARGB, false);
-            ctx.drawText(textRenderer, preExpLine, ex, ey, expARGB, false);
+                ctx.item(iconStack, x0, y0);
+                m.set(backup);
+            }
+
+            if (inline) {
+                float s = titleScale;
+                m.scale(s, s);
+
+                int x = (int) (30f / s);
+                int y = (int) (combinedBaselineY / s);
+
+                if (titleShadow) {
+                    ctx.text(
+                            textRenderer, preCombinedLine,
+                            x + 1, y + 1,
+                            titleShadowARGB, false
+                    );
+                }
+
+                ctx.text(
+                        textRenderer, preCombinedLine,
+                        x, y,
+                        titleARGB, false
+                );
+            } else {
+                float ts = titleScale;
+                m.scale(ts, ts);
+
+                int tx = (int) (30f / ts);
+                int ty = (int) (8f / ts);
+
+                if (titleShadow) {
+                    ctx.text(
+                            textRenderer, preTitleLine,
+                            tx + 1, ty + 1,
+                            titleShadowARGB, false
+                    );
+                }
+
+                ctx.text(
+                        textRenderer, preTitleLine,
+                        tx, ty,
+                        titleARGB, false
+                );
+
+                m.set(backup);
+
+                float es = expScale;
+                m.scale(es, es);
+
+                int ex = (int) (30f / es);
+                int ey = (int) (18f / es);
+
+                if (expShadow) {
+                    ctx.text(
+                            textRenderer, preExpLine,
+                            ex + 1, ey + 1,
+                            expShadowARGB, false
+                    );
+                }
+
+                ctx.text(
+                        textRenderer, preExpLine,
+                        ex, ey,
+                        expARGB, false
+                );
+            }
+        } finally {
             m.set(backup);
         }
     }
 
-    @Override public Object getType() { return categoryId; }
-    @Override public int getHeight() { return bgH; }
-    @Override public int getWidth()  { return bgW; }
-    public long getLastUpdateTime()  { return lastUpdateTime; }
+//    public void render(GuiGraphics ctx, Font textRenderer, long startTime) {
+//        if (bgEnabled) {
+//            if (bgTranslucent) {
+//                int argb = ((int)(bgAlpha * 255) << 24) | 0xFFFFFF;
+//                ctx.blit(RenderPipelines.GUI_TEXTURED, BG,
+//                        0, 0, 0, 0, bgW, bgH, 256, 256, argb);
+//            } else {
+//                ctx.blitSprite(RenderPipelines.GUI_TEXTURED, BG, 0, 0, bgW, bgH);
+//            }
+//        }
+//
+//        Matrix3x2fStack m = ctx.pose();
+//        Matrix3x2f backup = new Matrix3x2f(m);
+//
+//        if (iconEnabled && !iconStack.isEmpty()) {
+//            m.scale(iconScale, iconScale);
+//            int x0 = (int)(iconX / iconScale);
+//            int y0 = (int)(iconY / iconScale);
+//            ctx.renderItem(iconStack, x0, y0);
+//            m.set(backup);
+//        }
+//
+//        if (inline) {
+//            float s = titleScale;
+//            m.scale(s, s);
+//            int x = (int)(30f / s);
+//            int y = (int)(combinedBaselineY / s);
+//            if (titleShadow) ctx.drawString(textRenderer, preCombinedLine, x + 1, y + 1, titleShadowARGB, false);
+//            ctx.drawString(textRenderer, preCombinedLine, x, y, titleARGB, false);
+//            m.set(backup);
+//        } else {
+//            float ts = titleScale;
+//            m.scale(ts, ts);
+//            int tx = (int)(30f / ts);
+//            int ty = (int)(8f / ts);
+//            if (titleShadow) ctx.drawString(textRenderer, preTitleLine, tx + 1, ty + 1, titleShadowARGB, false);
+//            ctx.drawString(textRenderer, preTitleLine, tx, ty, titleARGB, false);
+//            m.set(backup);
+//
+//            float es = expScale;
+//            m.scale(es, es);
+//            int ex = (int)(30f / es);
+//            int ey = (int)(18f / es);
+//            if (expShadow) ctx.drawString(textRenderer, preExpLine, ex + 1, ey + 1, expShadowARGB, false);
+//            ctx.drawString(textRenderer, preExpLine, ex, ey, expARGB, false);
+//            m.set(backup);
+//        }
+//    }
+
+    @Override
+    public Object getToken() {
+        return categoryId;
+    }
+
+    @Override
+    public int height() {
+        return bgH;
+    }
+
+    @Override
+    public int width() {
+        return bgW;
+    }
+
+    public long getLastUpdateTime() {
+        return lastUpdateTime;
+    }
 
     public static String formatCategoryName(String rawPath) {
         String[] parts = rawPath.split("_");
